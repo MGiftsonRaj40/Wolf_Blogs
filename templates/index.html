@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Wolf Blogs</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <nav style="display: flex; align-items: baseline;">
+            <a href="#">
+                <h1>Wolf Blogs</h1>
+            </a>
+            <a href="#Highlights">Highlights</a>
+            <a href="#Blogs">Blogs</a>
+        </nav>
+
+        <div id="profile" class="profile-container">
+            {% if session.get('user') %}
+            <span id="username">{{ session['user'] }}</span>
+            <img src="{{ url_for('get_profile', user_id=user['_id']) if user.get('profile_pic') else '/static/images/profile.jpg' }}"
+                alt="Profile Image" id="profileImg">
+
+            <div class="dropdown" id="profileDropdown">
+                <div class="profile-details">
+                    <span id="detailName">{{ session['user'] }}</span>
+                    <button id="editBtn">Edit</button>
+                </div>
+                <div id="editSection" style="display: none;">
+                    <div class="edit-profile">
+                        <label>Change Username:</label>
+                        <input type="text" id="editUsername" placeholder="Enter new name">
+                        <button id="saveUsername">Save</button>
+                    </div>
+                    <div class="edit-image">
+                        <label>Change Profile Image:</label>
+                        <input type="file" id="editProfileImg" accept="image/*">
+                    </div>
+                </div>
+                <button id="logoutBtn">Logout</button>
+            </div>
+
+            {% elif session.get('admin') %}
+            <span id="username">{{ session['admin'] }}</span>
+            <img src="{{ session.get('profile_img', '/static/images/profile.jpg') }}" alt="Profile Image"
+                id="profileImg">
+
+            <div class="dropdown" id="profileDropdown">
+                <div class="profile-details">
+                    <span id="detailName">{{ session['admin'] }}</span>
+                    <button id="editBtn">Edit</button>
+                </div>
+
+                <div id="editSection" style="display: none;">
+                    <div class="edit-profile">
+                        <label>Change Username:</label>
+                        <input type="text" id="editUsername" placeholder="Enter new name">
+                        <button id="saveUsername">Save</button>
+                    </div>
+
+                    <div class="edit-image">
+                        <label>Change Profile Image:</label>
+                        <input type="file" id="editProfileImg" accept="image/*">
+                    </div>
+                </div>
+                <button id="logoutBtn">Logout</button>
+            </div>
+
+            {% else %}
+            <a href="/user_auth" id="loginLink">Login</a>
+            {% endif %}
+        </div>
+
+        <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+    </header>
+
+    <div id="wolf">
+        <img src="{{ url_for('static', filename='images/wolf-head2.png') }}">
+    </div>
+
+    <div id="hero">
+        <div class="hero-content">
+            <h1>Welcome to <span>Wolf Blogs</span></h1>
+            <p>Discover inspiring stories, creative ideas, and the latest updates — all crafted to ignite your
+                imagination.</p>
+            <div class="hero-buttons">
+                <a href="#postsContainer" class="btn primary-btn">Explore Posts</a>
+                <a href="#about" class="btn secondary-btn">Learn More</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="img-wrap">
+                <img src="{{ url_for('static', filename='images/wolf2.png') }}" alt="wolf1" class="wolf1">
+            </div>
+            <div class="img-wrap">
+                <img src="{{ url_for('static', filename='images/wolf0.2.png') }}" alt="wolf2" class="wolf2">
+            </div>
+            <div class="img-wrap">
+                <img src="{{ url_for('static', filename='images/wolf3.2.png') }}" alt="wolf3" class="wolf3">
+            </div>
+        </div>
+    </div>
+    <div class="section" id="Highlights">
+        <h2>Highlights</h2>
+        <div class="wolf-sit">
+            <img src="{{ url_for('static', filename='images/wolf6.2.png') }}" alt="wolf3">
+        </div>
+        <div id="bannerSlider" class="slider">
+            {% for banner in banners|reverse %}
+            <div class="slide">
+                {% if banner.thumb %}
+                <img src="{{ url_for('get_file', file_id=banner.thumb) }}" alt="{{ banner.title }}" class="banner-img"
+                    loading="lazy">
+                {% elif banner.image %}
+                <img src="{{ url_for('get_file', file_id=banner.image) }}" alt="{{ banner.title }}" class="banner-img"
+                    loading="lazy">
+                {% else %}
+                <img src="{{ url_for('static', filename='images/no-image.png') }}" alt="No Image" class="banner-img"
+                    loading="lazy">
+                {% endif %}
+                <div class="overlay">
+                    <h2>{{ banner.title }}</h2>
+                    <p class="banner-content">{{ banner.content }}</p>
+                    <p class="banner-date">{{ banner.formatted_date }}</p>
+                    <div class="tags">
+                        {% for tag in banner.tags %}
+                        <p>{{ tag }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="dots">
+            {% for banner in banners|reverse %}
+            <span class="dot" onclick="currentSlide({{ loop.index }})"></span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="wolf-up">
+        <div class="body">
+            <img src="{{ url_for('static', filename='images/wolf4.2.png') }}" class="wolf-fly fly">
+            <div class="wings">
+                <img src="{{ url_for('static', filename='images/wing-left.png') }}" class="wing-left wing fly">
+                <img src="{{ url_for('static', filename='images/wing-right.png') }}" class="wing-right wing fly">
+            </div>
+        </div>
+        <div class="neon-up-arrow"></div>
+    </div>
+
+    <div class="section" id="Blogs">
+        <h2>Blog</h2>
+        <div id="postsContainer">
+            {% for post in posts %}
+            <div class="post-card" id="post-{{ post._id }}">
+                <h3>
+                    {{ post.title }}
+                    <p class="post-date">{{ post.formatted_date }}</p>
+                </h3>
+                <div class="content-div">
+                    <p class="content-short" id="short-content-{{ post._id }}">{{ post.content[:20] }}...</p>
+
+                    <p class="content-full" id="full-content-{{ post._id }}" style="display: none;">{{ post.content }}
+                    </p>
+
+                    {% if post.content|length > 20 %}
+                    <button id="toggle-btn-{{ post._id }}" class="read-more-btn"
+                        onclick="toggleContent('{{ post._id }}')">
+                        Read More
+                    </button>
+                    {% endif %}
+                </div>
+
+                {% set image_files = post.files | selectattr('type', 'equalto', 'image') | list %}
+                {% set video_files = post.files | selectattr('type', 'equalto', 'video') | list %}
+                {% set other_files = post.files | rejectattr('type', 'in', ['image', 'video']) | list %}
+
+                {% if image_files %}
+                <div class="image-slider-wrapper">
+                    <div class="image-slides" id="slides-{{ post._id }}">
+                        {% for file in image_files %}
+                        <img src="{{ url_for('get_file', file_id=file.file_id) }}" class="post-image"
+                            alt="Blog Image {{ loop.index }}">
+                        {% endfor %}
+                    </div>
+
+                    {% if image_files|length > 1 %}
+                    <button class="prev-img" onclick="changeSlide('{{ post._id }}', -1)">&#10094;</button>
+                    <button class="next-img" onclick="changeSlide('{{ post._id }}', 1)">&#10095;</button>
+                    <div class="image-counter" id="counter-{{ post._id }}">1 / {{ image_files|length }}</div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                {% for file in video_files %}
+                <video width="320" height="240" controls>
+                    <source src="{{ url_for('get_file', file_id=file.file_id) }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                {% endfor %}
+
+                {% for file in other_files %}
+                <a href="{{ url_for('get_file', file_id=file.file_id) }}" target="_blank">
+                    📄 Download {{ file.filename }}
+                </a>
+                {% endfor %}
+
+                <button type="button" onclick="likePost('{{ post._id }}', this)" class="like-btn">
+                    <span class="heart">
+                        {% if session.get('user') and session['user'] in post.likes_users %}💙{% else %}🤍{% endif %}
+                    </span>
+                    <span id="likes-{{ post._id }}" style="margin-top: 5px; font-size: 14px;">{{ post.likes }}</span>
+                </button>
+
+                <div class="comments">
+                    <h4>Comments</h4>
+                    {% if session.get('user') %}
+                    <form onsubmit="addComment(event, '{{ post._id }}')" class="comment-form">
+                        <div class="input-wrapper">
+                            <input type="text" name="text" placeholder="Write a comment..." required>
+                            <button type="submit" title="Send"><i class="fa-solid fa-paper-plane"></i></button>
+                        </div>
+                    </form>
+                    {% else %}
+                    <form class="comment-form">
+                        <div class="input-wrapper">
+                            <input type="text" name="text" placeholder="Write a comment..." required>
+                            <button type="button" class="comment-btn"
+                                onclick="window.location.href='{{ url_for('user_auth') }}'">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
+                    {% endif %}
+
+                    {% for comment in post.comments %}
+                    <p><strong>{{ comment.username }}</strong>: {{ comment.text }}</p>
+                    {% endfor %}
+                </div>
+
+                <div class="share">
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url }}" target="_blank"
+                        title="Share on Facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?url={{ request.url }}&text={{ post.title }}"
+                        target="_blank" title="Share on Twitter">
+                        <i class="fab fa-x-twitter"></i>
+                    </a>
+                    <a href="https://wa.me/?text={{ request.url }}" target="_blank" title="Share on WhatsApp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+    <script>
+        const socket = io(location.origin, { transports: ['websocket', 'polling'] });
+
+        const bannerSlider = document.getElementById('bannerSlider');
+        let isDown = false, startX, scrollLeft;
+        let autoSlideInterval;
+        let currentIndex = 0;
+
+        // NEW: Store slide index for each post's inline slider
+        const postSlideIndices = {};
+
+        // NEW: Function to manage post card sliders
+        window.changeSlide = function (postId, n) {
+            const slidesContainer = document.getElementById(`slides-${postId}`);
+            if (!slidesContainer) return;
+
+            const slides = slidesContainer.querySelectorAll('.post-image');
+            if (slides.length <= 1) return;
+
+            // Initialize index for post if not set
+            if (!(postId in postSlideIndices)) {
+                postSlideIndices[postId] = 0;
+            }
+
+            let newIndex = postSlideIndices[postId] + n;
+            if (newIndex >= slides.length) {
+                newIndex = 0; // Loop to the first slide
+            } else if (newIndex < 0) {
+                newIndex = slides.length - 1; // Loop to the last slide
+            }
+            postSlideIndices[postId] = newIndex;
+
+            // Calculate the scroll position based on the width of a single slide (100% of container)
+            // Use clientWidth for the width of the container/slides
+            slidesContainer.scrollLeft = slidesContainer.clientWidth * newIndex;
+
+            // Update counter text
+            const counterEl = document.getElementById(`counter-${postId}`);
+            if (counterEl) {
+                counterEl.textContent = `${newIndex + 1} / ${slides.length}`;
+            }
+        }
+
+        // NEW: Initial setup for post sliders
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.image-slider-wrapper').forEach(wrapper => {
+                const postId = wrapper.closest('.post-card').id.replace('post-', '');
+                const slidesContainer = document.getElementById(`slides-${postId}`);
+                const slides = slidesContainer.querySelectorAll('.post-image');
+
+                if (slides.length >= 1) {
+                    // Ensure the slider is positioned at the start (index 0)
+                    slidesContainer.scrollLeft = 0;
+
+                    // Set initial counter
+                    const counterEl = document.getElementById(`counter-${postId}`);
+                    if (counterEl) {
+                        counterEl.textContent = `1 / ${slides.length}`;
+                    }
+                    postSlideIndices[postId] = 0;
+                }
+            });
+        });
+
+        // ====== AJAX for Likes/Comments ======
+        async function likePost(postId, btn) {
+            const res = await fetch(`/like/${postId}`, { method: "POST" });
+            const data = await res.json();
+
+            if (data.error === "login_required") {
+                return window.location.href = "/user_auth";
+            }
+
+            const count = btn.querySelector(`#likes-${postId}`);
+            if (count) count.textContent = data.likes;
+
+            const heart = btn.querySelector(".heart");
+
+            if (heart) {
+                // 1. Toggle the heart icon color (immediate change)
+                heart.textContent = data.liked ? "💙" : "🤍";
+
+                // 2. Trigger the expanding animation only when LIKE is added
+                if (data.liked) {
+                    heart.classList.remove('animate-like'); // Reset animation
+                    // Force reflow/repaint to restart the animation
+                    void heart.offsetWidth;
+                    heart.classList.add('animate-like');
+
+                    // Remove the class after the animation completes (0.5s)
+                    setTimeout(() => {
+                        heart.classList.remove('animate-like');
+                    }, 500);
+                }
+            }
+        }
+
+        // The old fullscreen slider functions (openSlider, closeSlider, nextImage, prevImage) were removed.
+
+        // ====== Drag Scroll (Desktop Disabled) ======
+        if (bannerSlider) {
+            // Only enable drag for small screens (e.g., touch devices)
+            if (window.innerWidth < 1024) { // desktop = 1024px+
+                bannerSlider.addEventListener('mousedown', e => {
+                    isDown = true;
+                    bannerSlider.classList.add('active');
+                    startX = e.pageX - bannerSlider.offsetLeft;
+                    scrollLeft = bannerSlider.scrollLeft;
+                    clearInterval(autoSlideInterval); // pause auto-slide on drag
+                });
+
+                bannerSlider.addEventListener('mouseleave', () => isDown = false);
+                bannerSlider.addEventListener('mouseup', () => {
+                    isDown = false;
+                    bannerSlider.classList.remove('active');
+                    startAutoSlide(); // resume auto-slide
+                });
+
+                bannerSlider.addEventListener('mousemove', e => {
+                    if (!isDown) return;
+                    e.preventDefault();
+                    const x = e.pageX - bannerSlider.offsetLeft;
+                    const walk = (x - startX) * 2;
+                    bannerSlider.scrollLeft = scrollLeft - walk;
+                });
+            }
+        }
+
+        // Optional: listen for resize to re-enable/disable dragging dynamically
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 1024) {
+                isDown = false;
+                bannerSlider.classList.remove('active');
+            }
+        });
+
+        // ====== Auto Slide Function (BANNER SLIDER) ======
+        function startAutoSlide() {
+            const slides = document.querySelectorAll('#bannerSlider .slide');
+            if (!slides.length) return;
+
+            autoSlideInterval = setInterval(() => {
+                currentIndex = (currentIndex + 1) % slides.length;
+                bannerSlider.scrollTo({
+                    left: bannerSlider.offsetWidth * currentIndex,
+                    behavior: 'smooth'
+                });
+                showSlide(currentIndex);
+            }, 5000);
+        }
+
+        let current = 0;
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.dot');
+
+        // ====== Update showSlide to highlight dot ======
+        function showSlide(n) {
+            const slides = document.querySelectorAll('#bannerSlider .slide');
+            const dots = document.querySelectorAll('.dot');
+
+            slides.forEach((s, i) => {
+                s.classList.toggle('active', i === n);
+            });
+
+            dots.forEach((d, i) => {
+                d.classList.toggle('active', i === n);
+            });
+        }
+
+        // ====== Make Dots Functional ======
+        const dotsContainer = document.querySelector('.dots');
+        if (dotsContainer) {
+            const dots = dotsContainer.querySelectorAll('.dot');
+            dots.forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    currentIndex = index;  // update current index
+                    showSlide(currentIndex);
+                    // Optional: scroll the slider to the current slide (for horizontal scroll sliders)
+                    if (bannerSlider) {
+                        bannerSlider.scrollTo({
+                            left: bannerSlider.offsetWidth * currentIndex,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        }
+
+        function currentSlide(n) {
+            current = n - 1;
+            showSlide(current);
+        }
+
+        function nextSlide() {
+            current = (current + 1) % slides.length;
+            showSlide(current);
+        }
+
+        // Auto slide every 5s
+        setInterval(nextSlide, 5000);
+        showSlide(current);
+
+        // ====== Render Initial Banners (Used by SocketIO) ======
+        function renderBanners(banners) {
+            if (!bannerSlider) return;
+            bannerSlider.innerHTML = '';
+
+            banners.slice().reverse().forEach(banner => {
+                const slide = document.createElement('div');
+                slide.className = 'slide';
+                const imgSrc = banner.thumb ? `/get_file?file_id=${banner.thumb}` :
+                    (banner.image ? `/get_file?file_id=${banner.image}` : '/static/images/no-image.png');
+                slide.innerHTML = `
+                <img src="${imgSrc}" alt="${banner.title}" class="banner-img" loading="lazy">
+                <div class="overlay">
+                  <h2>${banner.title}</h2>
+                  <p>${banner.content}</p>
+                  <p class="tags">${banner.tags.join(', ')}</p>
+                </div>`;
+                bannerSlider.append(slide);
+            });
+
+            currentIndex = 0;
+            bannerSlider.scrollLeft = 0;
+            startAutoSlide();
+        }
+
+        // Add this function inside your final <script> block, preferably near the top with other core functions
+
+        function toggleContent(postId) {
+            const shortContent = document.getElementById(`short-content-${postId}`);
+            const fullContent = document.getElementById(`full-content-${postId}`);
+            const button = document.getElementById(`toggle-btn-${postId}`);
+
+            if (shortContent.style.display === 'none') {
+                // Currently showing full content, switch to short
+                shortContent.style.display = 'block';
+                fullContent.style.display = 'none';
+                button.textContent = 'Read More';
+            } else {
+                // Currently showing short content, switch to full
+                shortContent.style.display = 'none';
+                fullContent.style.display = 'block';
+                button.textContent = 'Read Less';
+            }
+        }
+
+        // ====== Real-Time Updates ======
+        socket.on("new_banner", banner => {
+            if (!bannerSlider) return;
+            const slide = document.createElement("div");
+            slide.className = "slide";
+            const imgSrc = banner.thumb ? `/get_file?file_id=${banner.thumb}` :
+                (banner.image ? `/get_file?file_id=${banner.image}` : '/static/images/no-image.png');
+            slide.innerHTML = `
+            <img src="${imgSrc}" alt="${banner.title}" class="banner-img" loading="lazy">
+            <div class="overlay">
+              <h2>${banner.title}</h2>
+              <p>${banner.content}</p>
+              <p class="tags">${banner.tags.join(', ')}</p>
+            </div>`;
+            bannerSlider.prepend(slide); // Prepend to show newest first
+        });
+
+        // ====== Real-Time Post Updates ======
+        // NOTE: New post updates will need expanded logic to handle the new slider HTML structure
+        socket.on("new_post", post => {
+            if (document.getElementById(`post-${post._id}`)) return;
+            // Simplified insertion for demonstration; full post rendering would be complex here
+            const container = document.getElementById("postsContainer");
+            const div = document.createElement("div");
+            div.id = `post-${post._id}`;
+            div.className = "post-card";
+            div.innerHTML = `<h3>${post.title}</h3><p>${post.content}</p>`; // Minimal content
+            container.prepend(div);
+        });
+
+        socket.on("update_post", post => {
+            const el = document.getElementById(`post-${post._id}`);
+            if (el) {
+                el.querySelector("h3").innerText = post.title;
+                el.querySelector("p").innerText = post.content;
+                // Complex file/slider updates omitted for brevity
+            }
+        });
+
+        socket.on("delete_post", data => {
+            const el = document.getElementById(`post-${data._id}`);
+            if (el) el.remove();
+        });
+
+        socket.on("update_likes", data => {
+            const count = document.getElementById(`likes-${data.post_id}`);
+            if (count) count.textContent = data.likes;
+            const btn = count?.closest(".like-btn");
+            const heart = btn?.querySelector(".heart");
+            if (heart && data.current_user !== undefined) {
+                heart.textContent = data.liked_by_current_user ? "❤️" : "🤍";
+            }
+        });
+
+        socket.on("new_comment", data => {
+            const section = document.querySelector(`#post-${data.post_id} .comments`);
+            if (section) {
+                const p = document.createElement("p");
+                p.innerHTML = `<strong>${data.comment.username}</strong>: ${data.comment.text}`;
+                section.appendChild(p);
+            }
+        });
+
+        // ====== AJAX for Likes/Comments ======
+        async function likePost(postId, btn) {
+            const res = await fetch(`/like/${postId}`, { method: "POST" });
+            const data = await res.json();
+            if (data.error === "login_required") return window.location.href = "/user_auth";
+            const count = btn.querySelector(`#likes-${postId}`);
+            if (count) count.textContent = data.likes;
+            const heart = btn.querySelector(".heart");
+            if (heart) heart.textContent = data.liked ? "❤️" : "🤍";
+        }
+
+        async function addComment(event, postId) {
+            event.preventDefault();
+            const text = event.target.text.value;
+            const res = await fetch(`/comment/${postId}`, {
+                method: "POST",
+                body: new URLSearchParams({ text })
+            });
+            const data = await res.json();
+            if (data.error === "login_required") return window.location.href = "/user_auth";
+            event.target.reset();
+        }
+
+        // ====== Start Auto Slide After DOM Load (WOLF BUTTON) ======
+        window.addEventListener('load', startAutoSlide);
+        const wolfUp = document.querySelector('.wolf-up');
+        const postsContainer = document.getElementById('postsContainer');
+
+        // Show wolf when postsContainer is in view
+        window.addEventListener('scroll', () => {
+            const rect = postsContainer.getBoundingClientRect();
+            if (rect.top < window.innerHeight && rect.bottom > 0) {
+                wolfUp.classList.add('visible');
+            } else {
+                wolfUp.classList.remove('visible');
+            }
+        });
+
+        // On click: start flying + scroll to top
+        wolfUp.addEventListener('click', () => {
+            wolfUp.classList.add('fly');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Watch scroll position until top is reached
+            const checkTop = setInterval(() => {
+                if (window.scrollY === 0) {
+                    wolfUp.classList.remove('fly'); // stop wings
+                    clearInterval(checkTop);
+                }
+            }, 100);
+        });
+    </script>
+</body>
+
+</html>

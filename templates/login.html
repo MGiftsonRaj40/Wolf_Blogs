@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at top, #0a1a2f 0%, #020b16 100%);
+            font-family: 'Poppins', sans-serif;
+            color: #d6e4ff;
+            overflow: hidden;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 25px;
+            color: #5dafff;
+            text-shadow: 0 0 10px #5dafff, 0 0 20px #1c6df2;
+        }
+
+        form {
+            background: rgba(15, 25, 45, 0.85);
+            padding: 40px 35px;
+            border-radius: 15px;
+            box-shadow: 0 0 25px rgba(45, 95, 255, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        input {
+            width: 260px;
+            padding: 12px 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #cfe2ff;
+            outline: none;
+            transition: 0.3s ease;
+        }
+
+        input::placeholder {
+            color: #8fbaff;
+        }
+
+        input:focus {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 10px #5dafff;
+        }
+
+        button {
+            width: 120px;
+            padding: 10px 15px;
+            background: linear-gradient(90deg, #007bff, #00c3ff);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: 0.4s ease;
+        }
+
+        button:hover {
+            background: linear-gradient(90deg, #00c3ff, #007bff);
+            box-shadow: 0 0 15px #007bff, 0 0 25px #00c3ff;
+            transform: scale(1.05);
+        }
+
+        /* Floating Animation */
+        form,
+        h2 {
+            animation: fadeIn 1.2s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Optional glowing orb background effect */
+        body::before {
+            content: '';
+            position: absolute;
+            top: -100px;
+            left: -100px;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(0, 102, 255, 0.4), transparent 70%);
+            filter: blur(80px);
+            animation: moveOrb 12s infinite alternate ease-in-out;
+        }
+
+        @keyframes moveOrb {
+            from {
+                transform: translate(0, 0);
+            }
+
+            to {
+                transform: translate(150px, 200px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Admin Login</h2>
+    <form method="POST">
+        <input type="text" name="username" placeholder="Username" required><br>
+        <input type="password" name="password" placeholder="Password" required><br>
+        <button type="submit">Login</button>
+    </form>
+</body>
+
+</html>

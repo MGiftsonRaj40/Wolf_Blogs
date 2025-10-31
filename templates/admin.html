@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+</head>
+
+<body>
+    <header>
+        <h2>Admin Dashboard</h2>
+        <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+    </header>
+
+    <main>
+        <div class="manage section" id="banner">
+            <!-- ===== BANNER MANAGEMENT ===== -->
+            <h2>Manage Banners</h2>
+            <form id="bannerForm" enctype="multipart/form-data">
+                <input type="text" name="title" id="bannerTitle" placeholder="Banner Title" required><br>
+                <textarea name="content" id="bannerContent" placeholder="Banner Content" required></textarea><br>
+                <input type="text" name="tags" id="bannerTags" placeholder="Tags (comma separated)" required><br>
+                <input type="file" name="image" id="bannerImage" accept="image/*"><br> <!-- New image input -->
+                <button type="submit">Add Banner</button>
+            </form>
+            <br>
+            <hr>
+            <!-- ===== EXISTING BANNERS SLIDER ===== -->
+            <h3>Existing Banners</h3>
+            <div class="slider" id="bannerSlider">
+                {% for banner in banners|reverse %}
+                <div class="slide" id="banner-{{ banner._id }}">
+                    <div class="overlay">
+                        <h3>{{ banner.title }}</h3>
+                        <p>{{ banner.content }}</p>
+                        <p class="tags">{{ banner.tags | join(', ') }}</p>
+                        <div class="action-buttons">
+                            <button onclick="editBanner('{{ banner._id }}')">Edit</button>
+                            <button onclick="deleteBanner('{{ banner._id }}')">Delete</button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- EDIT MODAL -->
+        <div id="editBannerModal" class="modal section">
+            <div class="modal-content">
+                <form id="editBannerForm" enctype="multipart/form-data">
+                    <input type="text" name="title" id="editBannerTitle" required><br>
+                    <textarea name="content" id="editBannerContent" required></textarea><br>
+                    <input type="text" name="tags" id="editBannerTags" placeholder="Tags (comma separated)"><br>
+                    <input type="file" name="image" id="editBannerImage" accept="image/*"><br>
+                    <!-- New image input -->
+                    <button type="submit">Update Banner</button>
+                    <button type="button" onclick="closeEditBannerModal()">Cancel</button>
+                </form>
+            </div>
+        </div>
+        <div class="manage section" id="blogs">
+            <!-- PUBLISH NEW POST -->
+            <h2>Manage Posts</h2>
+            <form id="publishForm" enctype="multipart/form-data">
+                <input type="text" id="title" name="title" placeholder="Post Title" required><br>
+                <textarea id="content" name="content" placeholder="Write content here..." required></textarea><br>
+                <input type="file" name="files" id="postFiles" multiple><br> <!-- New file input -->
+                <button type="submit">Publish</button>
+            </form>
+            <br>
+            <hr>
+
+            <!-- EXISTING POSTS -->
+            <h3>Existing Posts</h3>
+            <div id="posts">
+                {% for post in posts %}
+                <div class="post-card" id="{{ post._id }}">
+                    <h3>{{ post.title }}</h3>
+                    <p>{{ post.content[:100] }}...</p>
+                    <div class="action-buttons">
+                        <button onclick="openEditModal('{{ post._id }}')">Edit</button>
+                        <button onclick="confirmDelete('{{ post._id }}')">Delete</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- DELETE CONFIRMATION MODAL -->
+            <div id="deleteModal" class="modal">
+                <div class="modal-content">
+                    <p>Are you sure you want to delete this post?</p>
+                    <button id="deleteConfirmBtn">Yes, Delete</button>
+                    <button onclick="closeDeleteModal()">Cancel</button>
+                </div>
+            </div>
+
+            <!-- EDIT POST MODAL -->
+            <div id="editModal" class="modal section">
+                <div class="modal-content">
+                    <form id="editForm" onsubmit="event.preventDefault(); saveEdit();" enctype="multipart/form-data">
+                        <input type="text" name="title" id="editTitle" required><br>
+                        <textarea name="content" id="editContent" required></textarea><br>
+                        <input type="file" name="files" id="editFiles" multiple><br>
+                        <button type="submit">Update</button>
+                        <button type="button" onclick="closeEditModal()">Cancel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+
+</html>
