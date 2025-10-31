@@ -1,3 +1,9 @@
 Flask
 Flask-PyMongo
+Flask-SocketIO
+eventlet
+gunicorn
+pymongo
 Werkzeug
+Pillow
+dnspython
