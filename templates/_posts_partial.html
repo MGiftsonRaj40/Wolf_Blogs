@@ -1,0 +1,55 @@
+<div id="postsContainer">
+    {% for post in posts %}
+    <div class="post-card" id="post-{{ post._id }}">
+        <h3>{{ post.title }}</h3>
+        <p>{{ post.content[:100] }}...</p>
+
+        {% for file in post.files %}
+        {% if file.type == 'image' %}
+        <img src="{{ url_for('get_file', file_id=file.file_id) }}" width="200">
+        {% elif file.type == 'video' %}
+        <video width="320" height="240" controls>
+            <source src="{{ url_for('get_file', file_id=file.file_id) }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        {% else %}
+        <a href="{{ url_for('get_file', file_id=file.file_id) }}" target="_blank">
+            📄 Download {{ file.filename }}
+        </a>
+        {% endif %}
+        {% endfor %}
+
+        <!-- Likes -->
+        <button type="button" onclick="likePost('{{ post._id }}', this)" class="like-btn">
+            <span class="heart">{% if session.get('user') and session['user'] in post.likes_users %}❤️{% else %}🤍{%
+                endif %}</span>
+            <span id="likes-{{ post._id }}">{{ post.likes }}</span>
+        </button>
+
+        <!-- Comments -->
+        <div class="comments">
+            <h4>Comments</h4>
+            {% for comment in post.comments %}
+            <p><strong>{{ comment.username }}</strong>: {{ comment.text }}</p>
+            {% endfor %}
+
+            {% if session.get('user') %}
+            <form onsubmit="addComment(event, '{{ post._id }}')">
+                <input type="text" name="text" placeholder="Write a comment..." required>
+                <button type="submit">Comment</button>
+            </form>
+            {% else %}
+            <button type="button" onclick="window.location.href='{{ url_for('user_auth') }}'">Comment...</button>
+            {% endif %}
+        </div>
+
+        <!-- Share buttons -->
+        <div class="share">
+            <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url }}" target="_blank">FB</a>
+            <a href="https://twitter.com/intent/tweet?url={{ request.url }}&text={{ post.title }}"
+                target="_blank">TW</a>
+            <a href="https://wa.me/?text={{ request.url }}" target="_blank">WA</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
