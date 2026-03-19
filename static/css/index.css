@@ -46,7 +46,7 @@ header {
     top: 0;
     z-index: 100;
     box-shadow: 0 4px 8px rgba(0, 123, 255, 0.25);
-    transition: all 0.3s;
+    transition: all 0.3s ease;
 }
 
 header h1 {
@@ -1042,41 +1042,119 @@ nav a:hover {
     color: #25d366;
 }
 
-/* ====== Responsive ====== */
-@media (max-width: 1200px) {
-    #postsContainer {
-        column-count: 2;
-    }
-}
 
-@media (max-width: 768px) {
-    #postsContainer {
-        column-count: 1;
-    }
-
-    #hero {
-        flex-direction: column-reverse;
-        text-align: center;
-    }
-
-    .hero-buttons {
-        justify-content: center;
-    }
-}
-
-@media (max-width: 600px) {
+@media (max-width: 450px) {
     header {
-        flex-direction: column;
-        gap: 10px;
-        text-align: center;
+        padding: 10px 15px;
     }
 
-    .profile-container span {
+    header a:nth-child(1) {
         display: none;
     }
 
-    .slide {
-        min-width: 260px;
+    header h1 {
+        display: none;
+        margin: 0%;
+    }
+
+    .profile-container img {
+        width: 35px;
+        height: 35px;
+    }
+
+    #hero {
+        padding: 40px 20px;
+    }
+
+    .hero-content h1 {
+        font-size: 2rem;
+    }
+
+    .hero-content p {
+        font-size: 1rem;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+        text-align: center;
+        padding: 10px 20px;
+    }
+
+    .section h2 {
+        font-size: 1.8rem;
+    }
+
+    .section {
+        max-width: 95vw;
+        padding: 30px 15px;
+        margin: 20px auto;
+    }
+
+    .slider {
+        height: 300px;
+    }
+
+    .overlay h2 {
+        font-size: 18px;
+    }
+
+    .overlay p {
+        font-size: 14px;
+    }
+
+    .banner-content {
+        max-width: 100%;
+    }
+
+    #postsContainer {
+        max-width: 95vw;
+        padding: 0 10px;
+    }
+
+    .post-card {
+        padding: 15px;
+    }
+
+    .post-card h3 {
+        font-size: 18px;
+    }
+
+    .comments {
+        max-height: 100px;
+    }
+
+    .share {
+        justify-content: center;
+    }
+
+    .share a {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+    }
+
+    #wolf {
+        display: none;
+    }
+
+    .img-wrap img {
+        width: 40vw;
+    }
+
+    .wolf-sit {
+        display: none;
+    }
+
+    .wolf-up {
+        display: none;
+    }
+
+    .body {
+        display: none;
     }
 }
 

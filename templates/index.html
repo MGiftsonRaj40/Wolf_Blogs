@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wolf Blogs</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -73,8 +74,6 @@
             <a href="/user_auth" id="loginLink">Login</a>
             {% endif %}
         </div>
-
-        <script src="{{ url_for('static', filename='js/index.js') }}"></script>
     </header>
 
     <div id="wolf">
@@ -121,7 +120,7 @@
                 <img src="{{ url_for('static', filename='images/no-image.png') }}" alt="No Image" class="banner-img"
                     loading="lazy">
                 {% endif %}
-                <div class="overlay">
+                <div class="overlay" data-banner-id="{{ banner._id }}">
                     <h2>{{ banner.title }}</h2>
                     <p class="banner-content">{{ banner.content }}</p>
                     <p class="banner-date">{{ banner.formatted_date }}</p>
@@ -134,6 +133,63 @@
             </div>
             {% endfor %}
         </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const slides = document.querySelectorAll('.slide');
+                slides.forEach(slide => {
+                    const img = slide.querySelector('.banner-img');
+                    if (img) {
+                        img.onload = () => {
+                            const luminance = calculateLuminance(img);
+                            if (luminance > 128) { // Adjust threshold as needed
+                                slide.classList.add('dark-mode');
+                            } else {
+                                slide.classList.add('light-mode');
+                            }
+                        };
+                    }
+                });
+
+                function calculateLuminance(imgElement) {
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.width = imgElement.naturalWidth;
+                    canvas.height = imgElement.naturalHeight;
+                    context.drawImage(imgElement, 0, 0);
+
+                    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imageData.data;
+
+                    let r, g, b, y, luminance;
+                    let sum = 0;
+                    for (let i = 0; i < data.length; i += 4) {
+                        r = data[i];
+                        g = data[i + 1];
+                        b = data[i + 2];
+
+                        y = (r * 0.3) + (g * 0.59) + (b * 0.11);
+                        luminance = (y * 255) / 265;
+                        sum += luminance;
+                    }
+
+                    const averageLuminance = sum / ((canvas.width * canvas.height) / 4);
+                    return averageLuminance;
+                }
+            });
+        </script>
+
+        <style>
+            .dark-mode .overlay h2,
+            .dark-mode .overlay p {
+                color: white;
+            }
+
+            .light-mode .overlay h2,
+            .light-mode .overlay p {
+                color: black;
+            }
+        </style>
 
         <div class="dots">
             {% for banner in banners|reverse %}
@@ -623,6 +679,28 @@
                     clearInterval(checkTop);
                 }
             }, 100);
+        });
+
+        let lastScrollTop = 0;
+        const header = document.querySelector("header");
+
+        window.addEventListener("scroll", () => {
+            let currentScroll = window.scrollY;
+
+            if (window.innerWidth <= 768) { // apply only on mobile
+                if (currentScroll > lastScrollTop) {
+                    // scrolling down
+                    header.style.transform = "translateY(-100%)";
+                } else {
+                    // scrolling up
+                    header.style.transform = "translateY(0)";
+                }
+            } else {
+                // reset for larger screens
+                header.style.transform = "translateY(0)";
+            }
+
+            lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
         });
     </script>
 </body>

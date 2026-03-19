@@ -2,10 +2,10 @@ from flask import (
     Flask, render_template, request, Response,
     redirect, url_for, session, flash, jsonify, send_file
 )
-from flask_pymongo import PyMongo
-from werkzeug.utils import secure_filename
+from pymongo import MongoClient
 from bson.objectid import ObjectId
 from io import BytesIO
+from types import SimpleNamespace
 import os
 import gridfs
 from datetime import datetime, timezone
@@ -22,8 +22,12 @@ app.secret_key = "a3f97b2b3c8f5d09d4e87f2f4c3a6b7de"
 socketio = SocketIO(app, async_mode='threading', cors_allowed_origins="*")
 
 # MongoDB Atlas URI (change if needed)
-app.config["MONGO_URI"] = "mongodb+srv://mgiftsonraj04:5OSQIOy0M4bMrScq@cluster1.5qfr84g.mongodb.net/Blog?retryWrites=true&w=majority"
-mongo = PyMongo(app)
+# NOTE: remove the invalid `/Blog` slash from the appName parameter and place the database in the host path.
+app.config["MONGO_URI"] = "mongodb+srv://mgiftsonraj04_db_user:52dfqLlZ3mhkjiVa@cluster0.tvjleao.mongodb.net/Blog?retryWrites=true&w=majority&appName=Cluster0"
+app.config["MONGO_DBNAME"] = "BlogDB"
+client = MongoClient(app.config["MONGO_URI"])
+db = client[app.config["MONGO_DBNAME"]]
+mongo = SimpleNamespace(db=db)
 fs = gridfs.GridFS(mongo.db)
 
 # Upload settings (still kept in case you use local fallback)
