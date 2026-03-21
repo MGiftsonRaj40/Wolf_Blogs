@@ -142,7 +142,7 @@
                     if (img) {
                         img.onload = () => {
                             const luminance = calculateLuminance(img);
-                            if (luminance > 128) { // Adjust threshold as needed
+                            if (luminance > 18) { // Adjust threshold as needed
                                 slide.classList.add('dark-mode');
                             } else {
                                 slide.classList.add('light-mode');

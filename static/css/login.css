@@ -89,6 +89,47 @@ h2 {
     animation: floatIn 1.5s ease-out;
 }
 
+.google-auth-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.google-signin-label {
+    color: #b9ddff;
+    font-size: 0.95rem;
+}
+
+.google-signin-button {
+    min-height: 44px;
+}
+
+.auth-divider {
+    position: relative;
+    margin: 8px 0 18px;
+    color: #99cfff;
+    font-size: 0.85rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 38%;
+    border-top: 1px solid rgba(102, 217, 255, 0.35);
+}
+
+.auth-divider::before {
+    left: 0;
+}
+
+.auth-divider::after {
+    right: 0;
+}
+
 #form-title {
     color: #00bfff;
     font-size: 1.5em;

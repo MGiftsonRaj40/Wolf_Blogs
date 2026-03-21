@@ -155,6 +155,32 @@ socket.on('new_post', (post) => {
 const bannerForm = document.getElementById('bannerForm');
 const bannerSlider = document.getElementById('bannerSlider');
 
+function bannerMarkup(banner) {
+    return `
+        <div class="overlay">
+            <h3>${banner.title || ''}</h3>
+            <p>${banner.content || ''}</p>
+            <p class="tags">${(banner.tags || []).join(', ')}</p>
+            <button onclick="editBanner('${banner._id}')">Edit</button>
+            <button onclick="deleteBanner('${banner._id}')">Delete</button>
+        </div>
+    `;
+}
+
+function upsertBanner(banner) {
+    if (!bannerSlider) return;
+
+    let slide = document.getElementById(`banner-${banner._id}`);
+    if (!slide) {
+        slide = document.createElement('div');
+        slide.classList.add('slide');
+        slide.id = `banner-${banner._id}`;
+        bannerSlider.prepend(slide);
+    }
+
+    slide.innerHTML = bannerMarkup(banner);
+}
+
 // Add Banner
 bannerForm?.addEventListener('submit', async e => {
     e.preventDefault();
@@ -173,20 +199,11 @@ bannerForm?.addEventListener('submit', async e => {
 
 // Real-time banner updates
 socket.on('new_banner', banner => {
-    const slide = document.createElement('div');
-    slide.classList.add('slide');
-    slide.id = `banner-${banner._id}`;
-    slide.innerHTML = `
-        <div class="overlay">
-            <h3>${banner.title}</h3>
-            <p>${banner.content}</p>
-            <p class="tags">${banner.tags.join(', ')}</p>
-            <button onclick="editBanner('${banner._id}')">Edit</button>
-            <button onclick="deleteBanner('${banner._id}')">Delete</button>
-        </div>
-    `;
-    bannerSlider.prepend(slide);
-    renderBanner(banner);
+    upsertBanner(banner);
+});
+
+socket.on('update_banner', banner => {
+    upsertBanner(banner);
 });
 
 
@@ -195,9 +212,9 @@ let currentEditId = null;
 function editBanner(id) {
     currentEditId = id;
     const slide = document.getElementById(`banner-${id}`);
-    document.getElementById('editBannerTitle').value = slide.querySelector('h3').innerText;
-    document.getElementById('editBannerContent').value = slide.querySelector('p').innerText;
-    document.getElementById('editBannerTags').value = slide.querySelector('.tags').innerText;
+    document.getElementById('editBannerTitle').value = slide.querySelector('h3')?.innerText || '';
+    document.getElementById('editBannerContent').value = slide.querySelector('.overlay p:not(.tags)')?.innerText || '';
+    document.getElementById('editBannerTags').value = slide.querySelector('.tags')?.innerText || '';
     document.getElementById('editBannerModal').style.display = 'block';
 }
 
@@ -212,7 +229,12 @@ document.getElementById('editBannerForm')?.addEventListener('submit', async e =>
     const formData = new FormData(e.target);
     const res = await fetch(`/edit_banner/${currentEditId}`, { method: 'POST', body: formData });
     const data = await res.json();
-    if (data.success) closeEditBannerModal();
+    if (data.success) {
+        upsertBanner(data.banner);
+        closeEditBannerModal();
+    } else {
+        alert(data.error || 'Failed to update banner');
+    }
 });
 
 async function deleteBanner(id) {
@@ -242,20 +264,7 @@ bannerSlider?.addEventListener('mousemove', e => {
 // Render a banner in the slider (reuse for existing + new banners)
 function renderBanner(banner) {
     if (document.getElementById(`banner-${banner._id}`)) return; // avoid duplicates
-
-    const slide = document.createElement('div');
-    slide.classList.add('slide');
-    slide.id = `banner-${banner._id}`;
-    slide.innerHTML = `
-        <div class="overlay">
-            <h3>${banner.title}</h3>
-            <p>${banner.content}</p>
-            <p class="tags">${(banner.tags || []).join(', ')}</p>
-            <button onclick="editBanner('${banner._id}')">Edit</button>
-            <button onclick="deleteBanner('${banner._id}')">Delete</button>
-        </div>
-    `;
-    bannerSlider.prepend(slide);
+    upsertBanner(banner);
 }
 
 // Load existing banners from server

@@ -19,6 +19,15 @@
 
     <div class="auth-container">
         <h2 id="form-title">Sign In</h2>
+        {% if google_client_id %}
+        <div class="google-auth-block">
+            <div id="g_id_onload" data-client_id="{{ google_client_id }}" data-context="signup"
+                data-ux_mode="popup" data-callback="handleGoogleCredential"></div>
+            <div class="google-signin-label">Continue with Google</div>
+            <div class="google-signin-button" id="googleSignInButton"></div>
+        </div>
+        <div class="auth-divider"><span>or</span></div>
+        {% endif %}
 
         <!-- Sign In Form -->
         <form id="signin-form" class="active" action="{{ url_for('user_auth') }}" method="POST">
@@ -40,7 +49,48 @@
             <button type="button" class="toggle-btn" onclick="toggleForm()">Already have an account?</button>
         </form>
     </div>
+    {% if google_client_id %}
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    {% endif %}
     <script>
+        async function handleGoogleCredential(response) {
+            try {
+                const res = await fetch("{{ url_for('google_auth') }}", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ credential: response.credential })
+                });
+
+                const data = await res.json();
+                if (!data.success) {
+                    alert(data.error || "Google authentication failed");
+                    return;
+                }
+
+                window.location.href = data.redirect_url || "{{ url_for('index') }}";
+            } catch (error) {
+                console.error(error);
+                alert("Google authentication failed");
+            }
+        }
+
+        window.handleGoogleCredential = handleGoogleCredential;
+
+        window.onload = function () {
+            if (window.google && google.accounts && google.accounts.id) {
+                google.accounts.id.renderButton(
+                    document.getElementById('googleSignInButton'),
+                    {
+                        theme: 'outline',
+                        size: 'large',
+                        shape: 'pill',
+                        text: 'signup_with',
+                        width: 290
+                    }
+                );
+            }
+        };
+
         function toggleForm() {
             const signInForm = document.getElementById('signin-form');
             const signUpForm = document.getElementById('signup-form');

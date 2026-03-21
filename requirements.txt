@@ -6,3 +6,5 @@ pymongo
 Werkzeug
 Pillow
 dnspython
+google-auth
+requests

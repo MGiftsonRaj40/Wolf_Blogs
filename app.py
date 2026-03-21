@@ -4,6 +4,8 @@ from flask import (
 )
 from pymongo import MongoClient
 from bson.objectid import ObjectId
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token
 from io import BytesIO
 from types import SimpleNamespace
 import os
@@ -11,7 +13,8 @@ import gridfs
 from datetime import datetime, timezone
 import mimetypes
 from flask_socketio import SocketIO, emit
-from PIL import Image
+from PIL import Image, ImageOps
+from werkzeug.utils import secure_filename
 import io
 
 # ----------------- APP SETUP -----------------
@@ -76,6 +79,61 @@ def serialize_post(post, current_user=None):
     }
 
     return out
+
+
+def serialize_banner(banner):
+    """Serialize banner for JSON / frontend consumption."""
+    if not banner:
+        return None
+
+    return {
+        "_id": _ensure_str(banner.get("_id")),
+        "title": banner.get("title", ""),
+        "content": banner.get("content", ""),
+        "tags": banner.get("tags", []) or [],
+        "image": _ensure_str(banner.get("image")),
+        "thumb": _ensure_str(banner.get("thumb")),
+        "created_at": banner.get("created_at").isoformat() if isinstance(banner.get("created_at"), datetime) else _ensure_str(banner.get("created_at"))
+    }
+
+
+def generate_unique_username(base_username):
+    """Generate a unique username when Google signup collides with an existing one."""
+    candidate = (base_username or "user").strip() or "user"
+    candidate = "".join(ch for ch in candidate if ch.isalnum() or ch in ("_", ".", "-"))
+    candidate = candidate[:30] or "user"
+
+    if not mongo.db.users.find_one({"username": candidate}):
+        return candidate
+
+    suffix = 1
+    while mongo.db.users.find_one({"username": f"{candidate}{suffix}"}):
+        suffix += 1
+    return f"{candidate}{suffix}"
+
+
+def create_banner_thumbnail(file_storage):
+    """Create a larger, higher-quality banner thumbnail for the homepage slider."""
+    file_bytes = io.BytesIO(file_storage.read())
+    file_bytes.seek(0)
+    file_id = fs.put(file_bytes, filename=file_storage.filename, contentType=file_storage.content_type)
+
+    file_bytes.seek(0)
+    img = Image.open(file_bytes)
+    img = ImageOps.exif_transpose(img)
+
+    if img.mode in ("RGBA", "P"):
+        img = img.convert("RGB")
+
+    # Keep slider images crisp on desktop while still serving something lighter than the original.
+    img.thumbnail((1920, 1920), Image.Resampling.LANCZOS)
+
+    temp = io.BytesIO()
+    img.save(temp, format='JPEG', quality=95, subsampling=0, optimize=True)
+    temp.seek(0)
+    thumb_id = fs.put(temp, filename="thumb_" + file_storage.filename, contentType='image/jpeg')
+
+    return str(file_id), str(thumb_id)
 
 def json_safe(doc):
     for k, v in doc.items():
@@ -208,19 +266,7 @@ def add_banner():
     thumb_id = None
 
     if file:
-        file_bytes = io.BytesIO(file.read())
-        file_bytes.seek(0)
-        file_id = fs.put(file_bytes, filename=file.filename, contentType=file.content_type)
-
-        file_bytes.seek(0)
-        img = Image.open(file_bytes)
-        img.thumbnail((800, 800))
-        temp = io.BytesIO()
-        if img.mode in ("RGBA", "P"):
-            img = img.convert("RGB")
-        img.save(temp, format='JPEG')
-        temp.seek(0)
-        thumb_id = fs.put(temp, filename="thumb_" + file.filename, contentType='image/jpeg')
+        file_id, thumb_id = create_banner_thumbnail(file)
 
 
     banner_doc = {
@@ -234,10 +280,7 @@ def add_banner():
 
     inserted = mongo.db.banners.insert_one(banner_doc)
     banner_doc["_id"] = str(inserted.inserted_id)
-
-    # Prepare JSON-serializable data
-    banner_doc_serialized = banner_doc.copy()
-    banner_doc_serialized["created_at"] = banner_doc_serialized["created_at"].isoformat()
+    banner_doc_serialized = serialize_banner(banner_doc)
 
     # Emit to clients
     socketio.emit('new_banner', banner_doc_serialized, namespace='/')
@@ -248,12 +291,7 @@ def add_banner():
 def get_banners():
     banners = []
     for b in mongo.db.banners.find().sort('created_at', -1):  # DESCENDING: newest first
-        b['_id'] = str(b['_id'])
-        if b.get('image'):
-            b['image'] = str(b['image'])
-        if b.get('thumb'):
-            b['thumb'] = str(b['thumb'])
-        banners.append(b)
+        banners.append(serialize_banner(b))
     return jsonify(banners)
 
 @app.route('/edit_banner/<banner_id>', methods=['POST'])
@@ -272,17 +310,16 @@ def edit_banner(banner_id):
     # Update image if provided
     file = request.files.get('image')
     if file and file.filename:
-        file_id = fs.put(file, filename=file.filename, contentType=file.content_type)
+        file_id, thumb_id = create_banner_thumbnail(file)
+
         mongo.db.banners.update_one({'_id': ObjectId(banner_id)},
-                                    {'$set': {'title': title, 'content': content, 'tags': tags, 'image': str(file_id)}})
+                                    {'$set': {'title': title, 'content': content, 'tags': tags, 'image': file_id, 'thumb': thumb_id}})
     else:
         mongo.db.banners.update_one({'_id': ObjectId(banner_id)},
                                     {'$set': {'title': title, 'content': content, 'tags': tags}})
 
     updated_banner = mongo.db.banners.find_one({'_id': ObjectId(banner_id)})
-    updated_banner["_id"] = str(updated_banner["_id"])
-    if updated_banner.get("image"):
-        updated_banner["image"] = str(updated_banner["image"])
+    updated_banner = serialize_banner(updated_banner)
 
     socketio.emit('update_banner', updated_banner, namespace='/')
     return jsonify({"success": True, "banner": updated_banner})
@@ -461,7 +498,60 @@ def user_auth():
                 flash("Invalid username/email or password")
                 return redirect(url_for('user_auth'))
 
-    return render_template('user_auth.html')
+    return render_template(
+        'user_auth.html',
+        google_client_id=os.getenv("GOOGLE_CLIENT_ID", "").strip()
+    )
+
+
+@app.route('/google_auth', methods=['POST'])
+def google_auth():
+    google_client_id = os.getenv("GOOGLE_CLIENT_ID", "").strip()
+    if not google_client_id:
+        return jsonify({"success": False, "error": "google_auth_not_configured"}), 503
+
+    payload = request.get_json(silent=True) or {}
+    credential = payload.get("credential", "").strip()
+    if not credential:
+        return jsonify({"success": False, "error": "missing_credential"}), 400
+
+    try:
+        token_info = id_token.verify_oauth2_token(
+            credential,
+            google_requests.Request(),
+            google_client_id
+        )
+    except ValueError:
+        return jsonify({"success": False, "error": "invalid_google_token"}), 401
+
+    email = token_info.get("email", "").strip().lower()
+    email_verified = token_info.get("email_verified", False)
+    if not email or not email_verified:
+        return jsonify({"success": False, "error": "unverified_google_email"}), 400
+
+    existing_user = mongo.db.users.find_one({"email": email})
+    if existing_user:
+        session['user'] = existing_user['username']
+        return jsonify({"success": True, "new_user": False, "redirect_url": url_for('index')})
+
+    display_name = token_info.get("name", "").strip()
+    given_name = token_info.get("given_name", "").strip()
+    username_seed = given_name or display_name or email.split("@")[0]
+    username = generate_unique_username(username_seed)
+
+    user_doc = {
+        "username": username,
+        "email": email,
+        "password": None,
+        "auth_provider": "google",
+        "google_sub": token_info.get("sub"),
+        "profile_name": display_name or username,
+        "created_at": datetime.now(timezone.utc)
+    }
+
+    mongo.db.users.insert_one(user_doc)
+    session['user'] = username
+    return jsonify({"success": True, "new_user": True, "redirect_url": url_for('index')})
 
 @app.route('/update_user', methods=['POST'])
 def update_user():
