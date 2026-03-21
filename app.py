@@ -19,15 +19,14 @@ import io
 
 # ----------------- APP SETUP -----------------
 app = Flask(__name__)
-app.secret_key = "a3f97b2b3c8f5d09d4e87f2f4c3a6b7de"
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-secret-key-change-me")
 
 # IMPORTANT: use SocketIO runner
 socketio = SocketIO(app, async_mode='threading', cors_allowed_origins="*")
 
-# MongoDB Atlas URI (change if needed)
-# NOTE: remove the invalid `/Blog` slash from the appName parameter and place the database in the host path.
-app.config["MONGO_URI"] = "mongodb+srv://mgiftsonraj04_db_user:52dfqLlZ3mhkjiVa@cluster0.tvjleao.mongodb.net/Blog?retryWrites=true&w=majority&appName=Cluster0"
-app.config["MONGO_DBNAME"] = "BlogDB"
+# MongoDB config
+app.config["MONGO_URI"] = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
+app.config["MONGO_DBNAME"] = os.getenv("MONGO_DBNAME", "BlogDB")
 client = MongoClient(app.config["MONGO_URI"])
 db = client[app.config["MONGO_DBNAME"]]
 mongo = SimpleNamespace(db=db)
@@ -709,3 +708,5 @@ def add_header(response):
 if __name__ == '__main__':
     # Use socketio.run to enable WebSocket handling
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+
+

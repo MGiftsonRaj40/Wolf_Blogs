@@ -10,13 +10,15 @@ Wolf Blogs is a Flask + MongoDB blog application with:
 
 ## Tech Stack
 
-- Python
-- Flask
-- Flask-SocketIO
-- MongoDB Atlas
-- GridFS for uploaded files
-- Pillow for image processing
-- Google Identity Services for Google auth
+<p align="left">
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white" alt="Flask" />
+  <img src="https://img.shields.io/badge/Socket.IO-010101?style=for-the-badge&logo=socketdotio&logoColor=white" alt="Socket.IO" />
+  <img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
+  <img src="https://img.shields.io/badge/GridFS-13AA52?style=for-the-badge&logo=mongodb&logoColor=white" alt="GridFS" />
+  <img src="https://img.shields.io/badge/Pillow-8CAAE6?style=for-the-badge&logo=python&logoColor=white" alt="Pillow" />
+  <img src="https://img.shields.io/badge/Google%20Identity-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Google Identity" />
+</p>
 
 ## Project Structure
 
@@ -212,3 +214,4 @@ Current dependencies are listed in [requirements.txt](c:/Code%20Space/Blog/Blog/
 - dnspython
 - google-auth
 - requests
+
