@@ -16,7 +16,24 @@ from flask_socketio import SocketIO, emit
 from PIL import Image, ImageOps
 from werkzeug.utils import secure_filename
 import io
+def load_local_env(env_path=".env"):
+    """Load simple KEY=VALUE pairs from a local .env file if present."""
+    if not os.path.exists(env_path):
+        return
 
+    with open(env_path, "r", encoding="utf-8") as env_file:
+        for raw_line in env_file:
+            line = raw_line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            if key and key not in os.environ:
+                os.environ[key] = value
+
+
+load_local_env(os.path.join(os.path.dirname(__file__), ".env"))
 # ----------------- APP SETUP -----------------
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-secret-key-change-me")
@@ -708,5 +725,6 @@ def add_header(response):
 if __name__ == '__main__':
     # Use socketio.run to enable WebSocket handling
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+
 
 

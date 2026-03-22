@@ -1,4 +1,11 @@
-// ===== Profile Dropdown & Edit =====
+
+const pageLoader = document.getElementById('pageLoader');
+
+window.addEventListener('load', () => {
+    if (!pageLoader) return;
+    pageLoader.classList.add('hidden');
+    setTimeout(() => pageLoader.remove(), 500);
+});// ===== Profile Dropdown & Edit =====
 const profile = document.getElementById('profile');
 const dropdown = document.getElementById('profileDropdown');
 const editBtn = document.getElementById('editBtn');
@@ -95,3 +102,4 @@ editProfileImg.addEventListener('change', async e => {
 logoutBtn.addEventListener('click', () => {
     window.location.href = '/logout';
 });
+

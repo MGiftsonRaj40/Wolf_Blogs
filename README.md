@@ -20,18 +20,35 @@ Wolf Blogs is a Flask + MongoDB blog application with:
   <img src="https://img.shields.io/badge/Google%20Identity-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Google Identity" />
 </p>
 
+## Screenshots
+
+<p align="center">
+  <img src="images/1.png" alt="Wolf Blogs screenshot 1" width="45%" />
+  <img src="images/2.png" alt="Wolf Blogs screenshot 2" width="45%" />
+</p>
+
+<p align="center">
+  <img src="images/3.png" alt="Wolf Blogs screenshot 3" width="45%" />
+  <img src="images/4.png" alt="Wolf Blogs screenshot 4" width="45%" />
+</p>
+
+<p align="center">
+  <img src="images/5.png" alt="Wolf Blogs screenshot 5" width="45%" />
+  <img src="images/6.png" alt="Wolf Blogs screenshot 6" width="45%" />
+</p>
+
 ## Project Structure
 
 ```text
 Blog/
-├── app.py
-├── requirements.txt
-├── templates/
-├── static/
-│   ├── css/
-│   ├── js/
-│   └── images/
-└── venv/
+|-- app.py
+|-- requirements.txt
+|-- templates/
+|-- static/
+|   |-- css/
+|   |-- js/
+|   `-- images/
+`-- venv/
 ```
 
 ## Features
@@ -65,7 +82,7 @@ venv\Scripts\python.exe -m pip install -r requirements.txt
 
 ### 1. MongoDB
 
-This project currently connects using values in [app.py](c:/Code%20Space/Blog/Blog/app.py):
+This project currently connects using values in [app.py](app.py):
 
 ```python
 app.config["MONGO_URI"] = "your-mongodb-uri"
@@ -202,7 +219,7 @@ Do not confuse:
 
 ## Dependencies
 
-Current dependencies are listed in [requirements.txt](c:/Code%20Space/Blog/Blog/requirements.txt):
+Current dependencies are listed in [requirements.txt](requirements.txt):
 
 - Flask
 - Flask-SocketIO
@@ -214,4 +231,3 @@ Current dependencies are listed in [requirements.txt](c:/Code%20Space/Blog/Blog/
 - dnspython
 - google-auth
 - requests
-
